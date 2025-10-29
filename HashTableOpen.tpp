@@ -1,6 +1,14 @@
 template <typename Key, typename Val>
 HashTableOpen<Key, Val>::HashTableOpen(int i) {
     // TODO
+	// create the underlying records linked list
+	M = i; 									// sets the max length of the hash table
+	ht = new LinkedList<Record>*[i]; 		// initializes the array of linked list ptrs
+	for(int n = 0; n < i; n++){ 			// range based loop through ht
+		ht[n] = new LinkedList<Record>();	// makes all the initial values def recs
+	}
+	return;
+	
 }
 
 template <typename Key, typename Val>
@@ -22,6 +30,12 @@ HashTableOpen<Key, Val>& HashTableOpen<Key, Val>::operator=
 template <typename Key, typename Val>
 HashTableOpen<Key, Val>::~HashTableOpen() {
     // TODO
+	//go through and clear each linked list at each ht index
+	
+	for(int i = 0; i < M; i ++){
+		delete ht[i];
+	}
+	delete[] ht;
 }
 
 template <typename Key, typename Val>
@@ -100,6 +114,20 @@ void HashTableOpen<Key, Val>::copy(const HashTableOpen<Key, Val>& copyObj) {
 template <typename Key, typename Val>
 Val HashTableOpen<Key, Val>::find(const Key& k) const {
     // TODO
+	
+	// find the hash index, then search through the linked list
+	int index = hash(k);
+
+	LinkedList<Record>* ptr = ht[index];
+	for(int i = 0; i < ptr->getLength(); i ++){
+		Record r = ptr->getElement(i);
+		if(r.k == k){
+			return r.v;
+		}
+	}
+
+	throw string ("key not found");
+
 }
 
 template <typename Key, typename Val>
@@ -153,14 +181,43 @@ int HashTableOpen<Key, Val>::hash(const Key& k) const {
 template <typename Key, typename Val>
 void HashTableOpen<Key, Val>::insert(const Key& k, const Val& v) {
     // TODO
+	int index = hash(k);
+
+	Record r(k,v);
+
+	LinkedList<Record>* ptr = ht[index];
+	for(int i = 0; i < ptr->getLength(); i++){
+		Record e = ptr->getElement(i);
+		if(e.k == k){
+			throw string ("error: duplicate key");
+		}
+	}
+	ptr->append(r);
+
+	
 }
 
 template <typename Key, typename Val>
 void HashTableOpen<Key, Val>::remove(const Key& k) {
     // TODO
+	int index = hash(k); 				// get index of key
+	LinkedList<Record>* ptr = ht[index];			// retreive ptr at index
+	for(int i = 0; i < ptr->getLength(); i ++ ){
+		Record r = ptr->getElement(i);
+		if(r.k == k){
+			ptr->remove(i);
+			return;
+		}
+	}
+	throw string ("error: key not found");
 }
 
 template <typename Key, typename Val>
 int HashTableOpen<Key, Val>::size() const {
     // TODO
+	int count = 0;							// create a counter variable
+	for(int x = 0; x < M; x ++){ 					// iterate through each element in ht
+		count += ht[x]->getLength(); 	// get the length of the linked list and add to count
+	}
+	return count; // return count of ht
 }
